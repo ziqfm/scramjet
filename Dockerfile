@@ -37,7 +37,7 @@ ENV CARGO_PROFILE_RELEASE_STRIP="symbols"
 ENV CARGO_PROFILE_RELEASE_OPT_LEVEL="3" 
 
 # Explicitly enable bulk-memory operations for the new wasm-opt
-ENV WASMOPTFLAGS="--enable-bulk-memory"
+ENV WASMOPTFLAGS="--all-features"
 
 # Execute the build script from its native directory
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
