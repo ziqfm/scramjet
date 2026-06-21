@@ -43,40 +43,25 @@ function serve(req, res) {
 
   if (!existsSync(filePath) || !statSync(filePath).isFile()) {
     // SPA fallback
-    filePath = path.join(STATIC_DIR, "index.html");
-    if (!existsSync(filePath)) {
+    const fallback = path.join(STATIC_DIR, "index.html");
+    if (existsSync(fallback)) {
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "require-corp",
+      });
+      createReadStream(fallback).pipe(res);
+    } else {
       res.writeHead(404);
       res.end("Not Found");
-      return;
     }
-  }
-
-  // INTERCEPT HTML FILES FOR DYNAMIC ENV INJECTION
-  if (filePath.endsWith(".html")) {
-    let html = readFileSync(filePath, "utf-8");
-    
-    // Create our dynamic configuration object from Docker environment variables
-    const runtimeConfig = {
-      WISP_URL: process.env.WISP_URL || "wss://surf.ziqfm.com/"
-    };
-
-    // Inject the variables into the <head> of the HTML document
-    const injectionScript = `<script>window.__RUNTIME_CONFIG__ = ${JSON.stringify(runtimeConfig)};</script>`;
-    html = html.replace("<head>", `<head>${injectionScript}`);
-
-    res.writeHead(200, {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp",
-    });
-    res.end(html);
     return;
   }
 
-  // Serve all other static assets normally
   const ext = path.extname(filePath).toLowerCase();
   const mime = MIME[ext] || "application/octet-stream";
 
+  // Service workers need these headers
   res.writeHead(200, {
     "Content-Type": mime,
     "Cross-Origin-Opener-Policy": "same-origin",
