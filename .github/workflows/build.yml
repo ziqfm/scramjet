@@ -60,9 +60,10 @@ jobs:
         if: steps.check_build.outputs.build_needed == 'true'
         run: |
           git clone --recursive --depth 1 https://github.com/MercuryWorkshop/scramjet.git scramjet-src
-          # Copy our Dockerfile and production server into the source tree
+          # Copy our custom files into the source tree
           cp Dockerfile scramjet-src/
           cp server.prod.mjs scramjet-src/
+          cp entrypoint.sh scramjet-src/
 
       # 6. Set up Docker Buildx
       - name: Set up Docker Buildx
