@@ -37,20 +37,20 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN apk add --no-cache git python3 make g++
 
 WORKDIR /build
+COPY . .
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
-
+# Run the install
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile || pnpm install
 
-COPY . .
-
+# Copy optimized WASM artifacts from stage 1
 COPY --from=wasm-builder /build/packages/core/dist/scramjet.wasm packages/core/dist/
 COPY --from=wasm-builder /build/packages/core/rewriter/wasm/out/ packages/core/rewriter/wasm/out/
 
 RUN pnpm build
 RUN cd packages/demo && npx vite build
 
+# Setup minimal production server directory
 RUN mkdir /prod-server \
     && cp /build/packages/demo/dist /prod-server/static -r \
     && cd /prod-server \
