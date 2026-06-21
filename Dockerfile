@@ -95,4 +95,4 @@ ENV PORT=4141
 EXPOSE 4141
 
 # Exec form is MANDATORY in distroless
-CMD ["bun", "run", "server.prod.mjs"]
+CMD ["run", "server.prod.mjs"]
