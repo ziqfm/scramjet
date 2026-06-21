@@ -9,6 +9,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
     build-essential pkg-config git ca-certificates curl
 
+# Install bleeding-edge wasm-opt directly from GitHub 
 RUN BINARYEN_VERSION="version_118" && \
     if [ "$TARGETARCH" = "arm64" ]; then ARCH="aarch64"; else ARCH="x86_64"; fi && \
     curl -L "https://github.com/WebAssembly/binaryen/releases/download/${BINARYEN_VERSION}/binaryen-${BINARYEN_VERSION}-${ARCH}-linux.tar.gz" | tar -xz && \
@@ -18,6 +19,8 @@ RUN BINARYEN_VERSION="version_118" && \
 RUN rustup toolchain install nightly \
     && rustup target add wasm32-unknown-unknown --toolchain nightly \
     && rustup component add rust-src --toolchain nightly
+
+ENV CARGO_HTTP_MULTIPLEXING=false
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
@@ -33,6 +36,7 @@ ENV CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
 ENV CARGO_PROFILE_RELEASE_STRIP="symbols"
 ENV CARGO_PROFILE_RELEASE_OPT_LEVEL="3" 
 
+# Explicitly enable bulk-memory operations for the new wasm-opt
 ENV WASMOPTFLAGS="--enable-bulk-memory"
 
 # Execute the build script from its native directory
