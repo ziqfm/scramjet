@@ -78,6 +78,8 @@ jobs:
           file: ./scramjet-src/Dockerfile
           platforms: linux/arm64
           push: true
+          build-args: |
+            VITE_WISP_URL=${{ secrets.VITE_WISP_URL }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/scramjet:latest
             ghcr.io/${{ github.repository_owner }}/scramjet:${{ steps.get_commit.outputs.short_sha }}
