@@ -24,9 +24,11 @@ ENV CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
 ENV CARGO_PROFILE_RELEASE_STRIP="symbols"
 ENV CARGO_PROFILE_RELEASE_OPT_LEVEL="3" 
 
+ENV CARGO_TARGET_DIR="/build/packages/core/target"
+
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
-    --mount=type=cache,target=/build/packages/core/rewriter/target \
+    --mount=type=cache,target=/build/packages/core/target \
     cd packages/core/rewriter && RELEASE=1 OPTIMIZE_FOR_SPEED=1 bash wasm/build.sh
 
 
