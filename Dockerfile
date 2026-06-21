@@ -63,6 +63,9 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 COPY --from=wasm-builder /build/packages/core/dist/scramjet.wasm packages/core/dist/
 COPY --from=wasm-builder /build/packages/core/rewriter/wasm/out/ packages/core/rewriter/wasm/out/
 
+ARG VITE_WISP_URL
+ENV VITE_WISP_URL=$VITE_WISP_URL
+
 RUN npx rspack build
 RUN cd packages/demo && npx vite build
 
