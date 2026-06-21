@@ -33,6 +33,8 @@ ENV CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
 ENV CARGO_PROFILE_RELEASE_STRIP="symbols"
 ENV CARGO_PROFILE_RELEASE_OPT_LEVEL="3" 
 
+ENV WASMOPTFLAGS="--enable-bulk-memory"
+
 # Execute the build script from its native directory
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
