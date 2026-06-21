@@ -82,20 +82,20 @@ FROM oven/bun:alpine AS runtime
 
 USER root
 RUN apk add --no-cache proxychains-ng
+
 WORKDIR /app
 
-# Layer 1: Ultra-stable (3rd party node_modules)
+# Copy the app layers
 COPY --from=js-builder /prod-server/node_modules ./node_modules
-
-# Layer 2: Semi-stable (Server routing logic)
 COPY server.prod.mjs ./server.prod.mjs
-
-# Layer 3: Highly Volatile (Static UI assets + compiled WASM)
 COPY --from=js-builder /prod-server/static ./static
+
+# Copy and grant execution rights to our new startup script
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 ENV PORT=4141
 EXPOSE 4141
 
 ENTRYPOINT []
-
-CMD ["proxychains4", "-q", "bun", "run", "server.prod.mjs"]
+CMD ["./entrypoint.sh"]
