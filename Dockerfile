@@ -26,8 +26,8 @@ ENV CARGO_PROFILE_RELEASE_OPT_LEVEL="3"
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
-    --mount=type=cache,target=/build/packages/core/target \
-    cd packages/core && RELEASE=1 OPTIMIZE_FOR_SPEED=1 bash rewriter/wasm/build.sh
+    --mount=type=cache,target=/build/packages/core/rewriter/target \
+    cd packages/core/rewriter && RELEASE=1 OPTIMIZE_FOR_SPEED=1 bash wasm/build.sh
 
 
 # Stage 2: JS/TS Build
@@ -37,9 +37,10 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN apk add --no-cache git python3 make g++
 
 WORKDIR /build
+
 COPY . .
 
-# Run the install
+# Instant-install via pnpm store cache mount
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile || pnpm install
 
@@ -63,7 +64,6 @@ FROM oven/bun:distroless AS runtime
 
 WORKDIR /app
 
-# Volatility Layering
 # Layer 1: Ultra-stable (3rd party node_modules)
 COPY --from=js-builder /prod-server/node_modules ./node_modules
 
@@ -76,4 +76,5 @@ COPY --from=js-builder /prod-server/static ./static
 ENV PORT=4141
 EXPOSE 4141
 
+# Exec form is MANDATORY in distroless
 CMD ["bun", "run", "server.prod.mjs"]
