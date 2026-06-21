@@ -1,10 +1,19 @@
 # Stage 1: WASM Rewriter
 FROM rust:slim-bookworm AS wasm-builder
 
+# Expose Docker's target architecture variable to the build stage
+ARG TARGETARCH
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-    build-essential pkg-config binaryen git ca-certificates curl
+    build-essential pkg-config git ca-certificates curl
+
+RUN BINARYEN_VERSION="version_118" && \
+    if [ "$TARGETARCH" = "arm64" ]; then ARCH="aarch64"; else ARCH="x86_64"; fi && \
+    curl -L "https://github.com/WebAssembly/binaryen/releases/download/${BINARYEN_VERSION}/binaryen-${BINARYEN_VERSION}-${ARCH}-linux.tar.gz" | tar -xz && \
+    cp binaryen-${BINARYEN_VERSION}/bin/wasm-opt /usr/local/bin/ && \
+    rm -rf binaryen-${BINARYEN_VERSION}
 
 RUN rustup toolchain install nightly \
     && rustup target add wasm32-unknown-unknown --toolchain nightly \
@@ -24,6 +33,7 @@ ENV CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
 ENV CARGO_PROFILE_RELEASE_STRIP="symbols"
 ENV CARGO_PROFILE_RELEASE_OPT_LEVEL="3" 
 
+# Execute the build script from its native directory
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/build/packages/core/rewriter/target \
