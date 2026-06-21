@@ -78,8 +78,10 @@ RUN mkdir /prod-server \
 
 
 # Stage 3: Production Runtime (Distroless)
-FROM oven/bun:distroless AS runtime
+FROM oven/bun:alpine AS runtime
 
+USER root
+RUN apk add --no-cache proxychains-ng
 WORKDIR /app
 
 # Layer 1: Ultra-stable (3rd party node_modules)
@@ -94,5 +96,6 @@ COPY --from=js-builder /prod-server/static ./static
 ENV PORT=4141
 EXPOSE 4141
 
-# Exec form is MANDATORY in distroless
-CMD ["run", "server.prod.mjs"]
+ENTRYPOINT []
+
+CMD ["proxychains4", "-q", "bun", "run", "server.prod.mjs"]
