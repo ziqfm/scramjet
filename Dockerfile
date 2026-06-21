@@ -53,7 +53,6 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN apk add --no-cache git python3 make g++
 
 WORKDIR /build
-
 COPY . .
 
 # Instant-install via pnpm store cache mount
@@ -64,7 +63,7 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 COPY --from=wasm-builder /build/packages/core/dist/scramjet.wasm packages/core/dist/
 COPY --from=wasm-builder /build/packages/core/rewriter/wasm/out/ packages/core/rewriter/wasm/out/
 
-RUN pnpm build
+RUN npx rspack build
 RUN cd packages/demo && npx vite build
 
 # Setup minimal production server directory
